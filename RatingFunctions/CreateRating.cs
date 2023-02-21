@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RatingFunctions.Models;
 using System.Net.Http;
+using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Documents.Linq;
+using System.Linq;
+using System.Web.Http;
 
 namespace RatingFunctions
 {
@@ -18,6 +22,7 @@ namespace RatingFunctions
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             [CosmosDB("ratingsdb", "ratings", ConnectionStringSetting = "CosmosDbConnectionString")] IAsyncCollector<CreateRatingRequest> createRatingCollector,
+            [CosmosDB(databaseName: "ratingsdb", collectionName: "ratings", ConnectionStringSetting = "CosmosDbConnectionString")] DocumentClient cosmosClient,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
@@ -42,9 +47,21 @@ namespace RatingFunctions
 
             await createRatingCollector.AddAsync(data);
 
-            string responseMessage = "Rating created";
 
-            return new OkObjectResult(responseMessage);
+            Uri collectionUri = UriFactory.CreateDocumentCollectionUri("ratingsdb", "ratings");
+            
+            IDocumentQuery<CreateRatingResponse> query = cosmosClient.CreateDocumentQuery<CreateRatingResponse>(collectionUri).Where(r => r.Id == data.Id).AsDocumentQuery();
+
+            while (query.HasMoreResults)
+            {
+                foreach (CreateRatingResponse result in await query.ExecuteNextAsync())
+                {
+                    return new OkObjectResult(result);
+                }
+            }
+
+            return new BadRequestObjectResult("There is a problem in processing this request");
+
         }
     }
 }
