@@ -29,7 +29,9 @@ namespace RatingFunctions
 
             Uri collectionUri = UriFactory.CreateDocumentCollectionUri("ratingsdb", "ratings");
 
-            IDocumentQuery<CreateRatingResponse> query = cosmosClient.CreateDocumentQuery<CreateRatingResponse>(collectionUri).Where(r => r.UserId == userId).AsDocumentQuery();
+            var options = new FeedOptions { EnableCrossPartitionQuery = true };
+
+            IDocumentQuery<CreateRatingResponse> query = cosmosClient.CreateDocumentQuery<CreateRatingResponse>(collectionUri, options).Where(r => r.UserId == userId).AsDocumentQuery();
 
             var ratingList = new List<CreateRatingResponse>();
 
