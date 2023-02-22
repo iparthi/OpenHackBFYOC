@@ -27,6 +27,9 @@ namespace RatingFunctions.Models
 
         [JsonProperty("userNotes")]
         public string UserNotes { get; set; }
+
+        [JsonProperty("timestamp")]
+        public string Timestamp { get; set; }
     }
 
     
