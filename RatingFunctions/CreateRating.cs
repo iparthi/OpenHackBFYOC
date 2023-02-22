@@ -44,7 +44,7 @@ namespace RatingFunctions
             }
 
             data.Id = Guid.NewGuid().ToString();
-            data.Timestamp = string.Format("{0:yyyy-MM-ddTHH:mm:ss.FFFZ}", DateTime.UtcNow);
+            data.Timestamp = string.Format("{0:yyyy-MM-dd HH:mm:ss.FFFZ}", DateTime.UtcNow);
 
             await createRatingCollector.AddAsync(data);
 
